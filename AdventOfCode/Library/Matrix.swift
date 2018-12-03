@@ -12,6 +12,11 @@ extension Array {
         return (count > 0) ? (self[0],Array(self[1..<count])) : nil
     }
     
+    func advanced() -> Array {
+        guard let validMatch = match else { return self }
+        
+        return validMatch.tail + [validMatch.head]
+    }
 }
 
 class Matrix<T: Hashable>: Hashable, CustomStringConvertible {
