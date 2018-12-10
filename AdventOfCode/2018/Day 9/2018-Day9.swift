@@ -14,7 +14,7 @@ enum Direction {
 }
 
 extension Array where Element == Int {
-    
+
     func shift(withDistance distance: Int = 1) -> Array<Int> {
         guard count > 0 else { return [] }
         
@@ -51,8 +51,8 @@ extension Array where Element == Int {
         }
         self = shift(withDistance: distance)
     }
-
-    func provideItem(direction: Direction, count: Int,  fakey: inout [Element]) -> Element {
+    
+    func provideItem(direction: Direction, count: Int) -> Element {
         let directionValue: Int
         switch direction {
         case .clockwise:
@@ -60,12 +60,11 @@ extension Array where Element == Int {
         case .counterClockwise:
             directionValue = -1
         }
+        var fakey = [Int]()
+        fakey.reserveCapacity(72059)
         fakey = self
-       fakey.shiftInPlace(withDistance: count * directionValue)
-//        fakey =
-         //(withDistance: (count * directionValue))
-//        return shift(withDistance: (count * directionValue)).first!
-
+        fakey.shiftInPlace(withDistance: count * directionValue)
+        
         return fakey.first!
     }
     
@@ -73,24 +72,26 @@ extension Array where Element == Int {
 
 let ballQuantity = 72059
 
+
+
 extension Year2018 {
     
- 
-    class Circle {
+    
+     fileprivate struct Circle {
         
-        var fakey: [Int]
-        let marbles: [Int]
-        let currentMarble: Int
-        let currentMarblePosition: Int
+        var marbles: [Int]
+        var currentMarble: Int
+        var currentMarblePosition: Int
+        var fakey = [Int]()
+
         
         init(marbles: [Int], currentMarble: Int, currentMarblePosition: Int) {
             self.marbles = marbles
             self.currentMarble = currentMarble
             self.currentMarblePosition = currentMarblePosition
-            self.fakey = [Int]()
-            self.fakey.reserveCapacity(ballQuantity)
+            fakey.reserveCapacity(72059)
         }
-    
+        
         enum NewPosition {
             
             case start
@@ -99,7 +100,7 @@ extension Year2018 {
             
         }
         
-         func insert() -> Circle {
+         mutating func insert() -> Circle {
             var updatedMarbles = marbles
             let newPosition: Int
             switch (marbles.count - currentMarblePosition - 1) {
@@ -115,11 +116,14 @@ extension Year2018 {
                 newPosition = currentMarblePosition + 2
                 updatedMarbles.insert(currentMarble + 1, at: newPosition)
             }
+            marbles = updatedMarbles
+            currentMarble = currentMarble + 1
+            currentMarblePosition = newPosition
             
-            return Circle(marbles: updatedMarbles, currentMarble: currentMarble + 1, currentMarblePosition: newPosition)
+            return self
         }
         
-        func insertAt(newPosition: NewPosition) -> Circle {
+          mutating func insertAt(newPosition: NewPosition) -> Circle {
             var updatedMarbles = marbles
             let absoluteNewMarblePosition: Int
             
@@ -134,11 +138,17 @@ extension Year2018 {
                 updatedMarbles = updatedMarbles + [currentMarble + 1]
                 absoluteNewMarblePosition = updatedMarbles.count - 1
             }
+            marbles = updatedMarbles
+            currentMarble = currentMarble + 1
+            currentMarblePosition = absoluteNewMarblePosition
             
-            return Circle(marbles: updatedMarbles, currentMarble: currentMarble + 1, currentMarblePosition: absoluteNewMarblePosition)
+            return self
+            
+            
+//            return Circle(marbles: updatedMarbles, currentMarble: currentMarble + 1, currentMarblePosition: absoluteNewMarblePosition)
         }
         
-        func attemptToAdd(marble: Int) -> (Int, Circle) {
+          mutating func attemptToAdd(marble: Int) -> (Int, Circle) {
             var score = 0
             guard marble % 23 != 0 && marble > 0 else {
                 // Do Jordan thing
@@ -149,8 +159,8 @@ extension Year2018 {
                     tempRotation.shiftInPlace()
                 }
                 
-                let marbleAtSixCCW = tempRotation.provideItem(direction: .counterClockwise, count: 6, fakey: &fakey)
-                let marbleAtSevenCCW = tempRotation.provideItem(direction: .counterClockwise, count: 7, fakey: &fakey)
+                let marbleAtSixCCW = tempRotation.provideItem(direction: .counterClockwise, count: 6)
+                let marbleAtSevenCCW = tempRotation.provideItem(direction: .counterClockwise, count: 7)
                 
                 
                 let newMarbles = marbles.filter{ $0 != marbleAtSevenCCW }
@@ -164,9 +174,7 @@ extension Year2018 {
         }
         
     }
-
-   
-
+    
     final class Day9: Day {
         
         required init() { }
@@ -196,7 +204,7 @@ extension Year2018 {
         }
         
         func part2() -> String {
-            let ballQuantity = 72059 * 100
+            let ballQuantity = 72059
             let playerCount = 411
             var ball = 0
             var scores = [Int: Int]()
@@ -220,5 +228,5 @@ extension Year2018 {
         }
         
     }
-
+    
 }
