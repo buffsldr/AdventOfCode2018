@@ -5,14 +5,6 @@
 //  Created by Dave DeLong on 12/8/17.
 //  Copyright © 2017 Dave DeLong. All rights reserved.
 //
-
-fileprivate enum Direction {
-    
-    case clockwise
-    case counterClockwise
-    
-}
-
 enum Shift {
     
     case sevenCounterClockwise
@@ -21,140 +13,125 @@ enum Shift {
     
 }
 
+struct Balls {
+    
+    private var items = [0]
+    
+    init() {
+        items.reserveCapacity(7205990)
+    }
+    
+   private func identifyProposedIndexAfterShifting(_ shift: Shift, currentIndex: Int) -> Int {
+        let proposedIndex: Int
+        switch shift {
+        case .sevenCounterClockwise:
+            proposedIndex = currentIndex - 7
+        case .sixCounterClockwise:
+            proposedIndex = currentIndex - 6
+        case .twoClockwise:
+            proposedIndex = currentIndex + 2
+        }
+        
+        return proposedIndex
+    }
+    
+    func translateProposedInsertionIndexToSafeIndex(_ proposedIndex: Int) -> Int {
+        let itemsCountLocal = items.count
+        switch (proposedIndex >= 0, proposedIndex <= itemsCountLocal) {
+        case (true, true):
+            // Safe
+            return proposedIndex
+        case (true, false):
+            let realIndexIsLastSpot = itemsCountLocal - 1
+            let realIndexIsNextToLastSpot = itemsCountLocal - 2
+            if proposedIndex == realIndexIsLastSpot {
+                return 1
+            } else if proposedIndex == realIndexIsNextToLastSpot {
+                return 0
+            } else {
+                // This fellow is positive. but a little too big so he needs to go around the horn
+                return translateProposedInsertionIndexToSafeIndex(proposedIndex - itemsCountLocal)
+            }
+            
+        case (false, _):
+            // All negative items
+            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
+        }
+    }
+    
+    mutating func customInsert(item: Int, using shift: Shift, currentIndex: Int) -> Int {
+        let proposedIndex = identifyProposedIndexAfterShifting(shift, currentIndex: currentIndex)
+        let safeIndex = translateProposedInsertionIndexToSafeIndex(proposedIndex)
+        
+        items.insert(item, at: safeIndex)
+        
+        return safeIndex
+    }
+    
+    mutating func customDeletion(at currentIndex: Int) -> Int {
+        let safeIndex = translateProposedDeletionIndexToSafeIndex(currentIndex)
+        
+        items.remove(at: safeIndex)
+        
+        return safeIndex
+    }
+    
+   private func translateProposedDeletionIndexToSafeIndex(_ proposedIndex: Int) -> Int {
+        let itemsCountLocal = items.count
+        switch (proposedIndex >= 0, proposedIndex < itemsCountLocal) {
+        case (true, true):
+            // Safe
+            return proposedIndex
+        case (true, false):
+            // This fellow is positive. but a little too big so he needs to go around the horn
+            return translateProposedInsertionIndexToSafeIndex(proposedIndex - (itemsCountLocal))
+        case (false, _):
+            // All negative items
+            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
+        }
+    }
+    
+   private func translateProposedReadingIndexToSafeIndex(_ proposedIndex: Int) -> Int {
+        let itemsCountLocal = items.count
+        switch (proposedIndex >= 0, proposedIndex < itemsCountLocal) {
+        case (true, true):
+            return proposedIndex
+        case (true, false):
+            // This fellow is positive. but a little too big so he needs to go around the horn
+            return translateProposedReadingIndexToSafeIndex(proposedIndex - itemsCountLocal)
+        case (false, _):
+            // All negative items
+            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
+        }
+    }
+    
+    func readValueAt(index: Int) -> Int {
+        let safeIndex = translateProposedReadingIndexToSafeIndex(index)
+        
+        return items[safeIndex]
+    }
+    
+}
 
-final fileprivate class CircularArray2 {
+
+
+struct BallRunner {
     
-    var items: [Int]
-    var currentIndex = 0 {
-        didSet {
-            let a = 123
-        }
-    }
+    var currentIndex = 0
+    var balls = Balls()
     var playersScores = [Int: Int]()
-    var canonizedIndex = 0
     
-    func next() -> Int {
-        currentIndex += 1
-        
-        return self[currentIndex]
-    }
-    
-    init(items: [Int]) {
-        self.items = items
-        self.items.reserveCapacity(7205901)
-    }
-    
-    subscript(index: Int) -> Int {
-        get {
-            guard items.count > 0 else { return 0 }
-            let offSetIndex = index + currentIndex
-            
-            guard offSetIndex >= 0 else {
-                let newIndex = items.count + offSetIndex
-                
-                return self[newIndex]
-            }
-            guard offSetIndex < items.count else {
-                let quotient = offSetIndex / items.count
-                let subtractionAmount = quotient * items.count
-                
-                return items[offSetIndex - subtractionAmount]
-            }
-            
-            return items[offSetIndex]
-        }
-        
-        set(newValue) {
-            // perform a suitable setting action here
-            let offSetIndex = index + currentIndex
-            
-            guard offSetIndex >= 0 else {
-                let newIndex = items.count + offSetIndex
-                self[newIndex] = newValue
-                
-                return
-            }
-            guard offSetIndex < items.count else {
-                let quotient = offSetIndex / items.count
-                let subtractionAmount = quotient * items.count
-                items[offSetIndex - subtractionAmount] = newValue
-                
-                return
-            }
-            
-            items[offSetIndex] = newValue
-        }
-    }
-    
-    func actualIndex(from fakeIndex: Int) -> Int {
-        let offSetIndex = fakeIndex + currentIndex
-        if offSetIndex == 0 { return 0 }
-        guard offSetIndex >= 0 else {
-            let actualIndexFound = (items.count + 1) + offSetIndex
-            
-            return actualIndex(from:actualIndexFound)
-        }
-        
-        guard offSetIndex < items.count else {
-            let quotient = offSetIndex / items.count
-            let subtractionAmount = quotient * items.count
-            
-            return offSetIndex - subtractionAmount
-        }
-        
-        return offSetIndex
-    }
-    
-    func placeBall(number: Int, for player: Int) {
-        guard number % 23 != 0 else {
-            //Score it
-            let value7Left = self[-7]
-            let realIndexFor7 = actualIndex(from: -7)
-            let score = value7Left + number
-            
-            items.remove(at: realIndexFor7)
+    mutating func place(newBallNumber: Int, for player: Int) {
+        guard newBallNumber % 23 != 0 else {
+            let value7Left = balls.readValueAt(index: currentIndex - 7)
+            currentIndex = balls.customDeletion(at: currentIndex - 7)
             let currentPlayerScore = playersScores[player] ?? 0
-            playersScores.updateValue(currentPlayerScore + score, forKey: player)
-            let realIndex = actualIndex(from: -6)
-            currentIndex = realIndex
+            playersScores.updateValue(currentPlayerScore + value7Left + newBallNumber, forKey: player)
             
             return
         }
         
-        let valueOfCurrentBall = self[0]
-        let realIndex = provideExistingSafeIndex(for: valueOfCurrentBall, shift: .twoClockwise) //items.index(of: valueOfCurrentBall)!
-        items.insert(number, at: realIndex)
-        currentIndex = realIndex
-    }
-    
-    func provideExistingSafeIndex(for number: Int, shift: Shift) -> Int {
-        guard items.count > 0 else { return 1 }
-        let proposedCanonizedIndex: Int
-        switch shift {
-        case .sevenCounterClockwise:
-            proposedCanonizedIndex = canonizedIndex - 7
-        case .sixCounterClockwise:
-            proposedCanonizedIndex = canonizedIndex - 6
-        case .twoClockwise:
-            proposedCanonizedIndex = canonizedIndex + 2
-        }
-        guard proposedCanonizedIndex < items.count && proposedCanonizedIndex >= 0 else {
-            var realIndex = items.index(of: number)!
-            let realIndexIsLastSpot = items.count - 1
-            let realIndexIsNextToLastSpot = items.count - 2
-            
-            if realIndex == realIndexIsLastSpot {
-                realIndex = 1
-            } else if realIndex == realIndexIsNextToLastSpot {
-                realIndex = 0
-            } else {
-                realIndex = realIndex + 2
-            }
-            
-            return realIndex
-        }
-        
-        return proposedCanonizedIndex
+        currentIndex = balls.customInsert(item: newBallNumber, using: .twoClockwise, currentIndex: currentIndex)
     }
     
 }
@@ -164,21 +141,20 @@ final fileprivate class CircularArray2 {
     required init() { }
     
     func part1() -> String {
-        let c1 = CircularArray2(items: [0])
-        c1.currentIndex = 0
         var ballCount = 0
-        let playerCount = 10
+        let playerCount = 411
         var currentPlayer = 1
-        let marbles100 = 25
+        let marbles100 = 72059 * 100
+        var br = BallRunner()
         
         while ballCount < marbles100 {
             ballCount += 1
             if currentPlayer == (playerCount + 1) { currentPlayer = 1 }
-            c1.placeBall(number: ballCount, for: currentPlayer)
+            br.place(newBallNumber: ballCount, for: currentPlayer)
             currentPlayer = currentPlayer + 1
         }
         
-        let maxScore = c1.playersScores.values.max()!
+        let maxScore = br.playersScores.values.max()!
 
         return "\(maxScore)"
         

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4D48739121B59A6F0016757D /* CGRect+Extras.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D48739021B59A6F0016757D /* CGRect+Extras.swift */; };
+		4DA08E9E21C06B6B002D9A3C /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA08E9D21C06B6B002D9A3C /* LinkedList.swift */; };
 		4DE7485D21B3409500A52359 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE7485C21B3409500A52359 /* main.swift */; };
 		4DE748B521B343A500A52359 /* 2018.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE7486921B343A400A52359 /* 2018.swift */; };
 		4DE748B621B343A500A52359 /* 2018-Day2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE7486C21B343A400A52359 /* 2018-Day2.swift */; };
@@ -57,6 +58,7 @@
 
 /* Begin PBXFileReference section */
 		4D48739021B59A6F0016757D /* CGRect+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGRect+Extras.swift"; sourceTree = "<group>"; };
+		4DA08E9D21C06B6B002D9A3C /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
 		4DE7485921B3409500A52359 /* AdventOfCode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AdventOfCode; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DE7485C21B3409500A52359 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DE7486921B343A400A52359 /* 2018.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 2018.swift; sourceTree = "<group>"; };
@@ -417,6 +419,7 @@
 			isa = PBXGroup;
 			children = (
 				4DE748D021B343E900A52359 /* Day.swift */,
+				4DA08E9D21C06B6B002D9A3C /* LinkedList.swift */,
 				4DE748DA21B34D5000A52359 /* CircularArray.swift */,
 				4DE748D121B343E900A52359 /* Vector.swift */,
 				4DE748D221B343E900A52359 /* Regex.swift */,
@@ -511,6 +514,7 @@
 				4DE748C921B343A500A52359 /* 2018-Day10.swift in Sources */,
 				4DE748B721B343A500A52359 /* 2018-Day5.swift in Sources */,
 				4DE7485D21B3409500A52359 /* main.swift in Sources */,
+				4DA08E9E21C06B6B002D9A3C /* LinkedList.swift in Sources */,
 				4DE748CC21B343A500A52359 /* 2018-Day11.swift in Sources */,
 				4DE748BB21B343A500A52359 /* 2018-Day22.swift in Sources */,
 				4DE748BA21B343A500A52359 /* 2018-Day25.swift in Sources */,
@@ -645,9 +649,12 @@
 		4DE7486121B3409500A52359 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK888FH56G;
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -655,10 +662,11 @@
 		4DE7486221B3409500A52359 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_USE_OPTIMIZATION_PROFILE = NO;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK888FH56G;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_COMPILATION_MODE = singlefile;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
