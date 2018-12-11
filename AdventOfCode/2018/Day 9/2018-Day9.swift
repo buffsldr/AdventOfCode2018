@@ -6,227 +6,189 @@
 //  Copyright © 2017 Dave DeLong. All rights reserved.
 //
 
-enum Direction {
+fileprivate enum Direction {
     
     case clockwise
     case counterClockwise
     
 }
 
-extension Array where Element == Int {
+enum Shift {
+    
+    case sevenCounterClockwise
+    case sixCounterClockwise
+    case twoClockwise
+    
+}
 
-    func shift(withDistance distance: Int = 1) -> Array<Int> {
-        guard count > 0 else { return [] }
-        
-        guard abs(distance) == 1 else {
-            switch distance {
-            case let x where x > 0:
-                return shift(withDistance: 1).shift(withDistance: (x - 1))
-            case let x where x < 0:
-                return shift(withDistance: -1).shift(withDistance: (x + 1))
-            case let x where x == 0:
-                return self
-            default:
-                return self
-            }
+
+final fileprivate class CircularArray2 {
+    
+    var items: [Int]
+    var currentIndex = 0 {
+        didSet {
+            let a = 123
         }
+    }
+    var playersScores = [Int: Int]()
+    var canonizedIndex = 0
+    
+    func next() -> Int {
+        currentIndex += 1
         
-        let index = distance >= 0 ? startIndex.advanced(by: distance) : endIndex.advanced(by: distance)
-        return Array(self[index ..< endIndex] + self[startIndex ..< index])
+        return self[currentIndex]
     }
     
-    mutating func shiftInPlace(withDistance distance: Int = 1) {
-        guard abs(distance) == 1 else {
-            switch distance {
-            case let x where x > 1:
-                self = shift(withDistance: 1).shift(withDistance: (x - 1))
-            case let x where x < 1:
-                self = shift(withDistance: -1).shift(withDistance: (x + 1))
-            case let x where x == 0:
-                break
-            default:
-                break
+    init(items: [Int]) {
+        self.items = items
+        self.items.reserveCapacity(7205901)
+    }
+    
+    subscript(index: Int) -> Int {
+        get {
+            guard items.count > 0 else { return 0 }
+            let offSetIndex = index + currentIndex
+            
+            guard offSetIndex >= 0 else {
+                let newIndex = items.count + offSetIndex
+                
+                return self[newIndex]
             }
+            guard offSetIndex < items.count else {
+                let quotient = offSetIndex / items.count
+                let subtractionAmount = quotient * items.count
+                
+                return items[offSetIndex - subtractionAmount]
+            }
+            
+            return items[offSetIndex]
+        }
+        
+        set(newValue) {
+            // perform a suitable setting action here
+            let offSetIndex = index + currentIndex
+            
+            guard offSetIndex >= 0 else {
+                let newIndex = items.count + offSetIndex
+                self[newIndex] = newValue
+                
+                return
+            }
+            guard offSetIndex < items.count else {
+                let quotient = offSetIndex / items.count
+                let subtractionAmount = quotient * items.count
+                items[offSetIndex - subtractionAmount] = newValue
+                
+                return
+            }
+            
+            items[offSetIndex] = newValue
+        }
+    }
+    
+    func actualIndex(from fakeIndex: Int) -> Int {
+        let offSetIndex = fakeIndex + currentIndex
+        if offSetIndex == 0 { return 0 }
+        guard offSetIndex >= 0 else {
+            let actualIndexFound = (items.count + 1) + offSetIndex
+            
+            return actualIndex(from:actualIndexFound)
+        }
+        
+        guard offSetIndex < items.count else {
+            let quotient = offSetIndex / items.count
+            let subtractionAmount = quotient * items.count
+            
+            return offSetIndex - subtractionAmount
+        }
+        
+        return offSetIndex
+    }
+    
+    func placeBall(number: Int, for player: Int) {
+        guard number % 23 != 0 else {
+            //Score it
+            let value7Left = self[-7]
+            let realIndexFor7 = actualIndex(from: -7)
+            let score = value7Left + number
+            
+            items.remove(at: realIndexFor7)
+            let currentPlayerScore = playersScores[player] ?? 0
+            playersScores.updateValue(currentPlayerScore + score, forKey: player)
+            let realIndex = actualIndex(from: -6)
+            currentIndex = realIndex
+            
             return
         }
-        self = shift(withDistance: distance)
+        
+        let valueOfCurrentBall = self[0]
+        let realIndex = provideExistingSafeIndex(for: valueOfCurrentBall, shift: .twoClockwise) //items.index(of: valueOfCurrentBall)!
+        items.insert(number, at: realIndex)
+        currentIndex = realIndex
     }
     
-    func provideItem(direction: Direction, count: Int) -> Element {
-        let directionValue: Int
-        switch direction {
-        case .clockwise:
-            directionValue = 1
-        case .counterClockwise:
-            directionValue = -1
+    func provideExistingSafeIndex(for number: Int, shift: Shift) -> Int {
+        guard items.count > 0 else { return 1 }
+        let proposedCanonizedIndex: Int
+        switch shift {
+        case .sevenCounterClockwise:
+            proposedCanonizedIndex = canonizedIndex - 7
+        case .sixCounterClockwise:
+            proposedCanonizedIndex = canonizedIndex - 6
+        case .twoClockwise:
+            proposedCanonizedIndex = canonizedIndex + 2
         }
-        var fakey = [Int]()
-        fakey.reserveCapacity(72059)
-        fakey = self
-        fakey.shiftInPlace(withDistance: count * directionValue)
+        guard proposedCanonizedIndex < items.count && proposedCanonizedIndex >= 0 else {
+            var realIndex = items.index(of: number)!
+            let realIndexIsLastSpot = items.count - 1
+            let realIndexIsNextToLastSpot = items.count - 2
+            
+            if realIndex == realIndexIsLastSpot {
+                realIndex = 1
+            } else if realIndex == realIndexIsNextToLastSpot {
+                realIndex = 0
+            } else {
+                realIndex = realIndex + 2
+            }
+            
+            return realIndex
+        }
         
-        return fakey.first!
+        return proposedCanonizedIndex
+    }
+    
+}
+
+ final class Day9: Day {
+    
+    required init() { }
+    
+    func part1() -> String {
+        let c1 = CircularArray2(items: [0])
+        c1.currentIndex = 0
+        var ballCount = 0
+        let playerCount = 10
+        var currentPlayer = 1
+        let marbles100 = 25
+        
+        while ballCount < marbles100 {
+            ballCount += 1
+            if currentPlayer == (playerCount + 1) { currentPlayer = 1 }
+            c1.placeBall(number: ballCount, for: currentPlayer)
+            currentPlayer = currentPlayer + 1
+        }
+        
+        let maxScore = c1.playersScores.values.max()!
+
+        return "\(maxScore)"
+        
+    }
+    
+    func part2() -> String {
+        
+        return "W"
     }
     
 }
 
-let ballQuantity = 72059
 
-
-
-extension Year2018 {
-    
-    
-     fileprivate struct Circle {
-        
-        var marbles: [Int]
-        var currentMarble: Int
-        var currentMarblePosition: Int
-        var fakey = [Int]()
-
-        
-        init(marbles: [Int], currentMarble: Int, currentMarblePosition: Int) {
-            self.marbles = marbles
-            self.currentMarble = currentMarble
-            self.currentMarblePosition = currentMarblePosition
-            fakey.reserveCapacity(72059)
-        }
-        
-        enum NewPosition {
-            
-            case start
-            case middle(Int)
-            case end
-            
-        }
-        
-         mutating func insert() -> Circle {
-            var updatedMarbles = marbles
-            let newPosition: Int
-            switch (marbles.count - currentMarblePosition - 1) {
-            case 0:
-                // Last
-                newPosition = 1
-                updatedMarbles.insert(currentMarble + 1, at: newPosition)
-                
-            case 1:
-                updatedMarbles = updatedMarbles + [currentMarble + 1]
-                newPosition = updatedMarbles.count - 1
-            default:
-                newPosition = currentMarblePosition + 2
-                updatedMarbles.insert(currentMarble + 1, at: newPosition)
-            }
-            marbles = updatedMarbles
-            currentMarble = currentMarble + 1
-            currentMarblePosition = newPosition
-            
-            return self
-        }
-        
-          mutating func insertAt(newPosition: NewPosition) -> Circle {
-            var updatedMarbles = marbles
-            let absoluteNewMarblePosition: Int
-            
-            switch newPosition {
-            case .start:
-                updatedMarbles.insert(currentMarble + 1, at: 0)
-                absoluteNewMarblePosition = 0
-            case .middle(let position):
-                updatedMarbles.insert(currentMarble + 1, at: position)
-                absoluteNewMarblePosition = position
-            case .end:
-                updatedMarbles = updatedMarbles + [currentMarble + 1]
-                absoluteNewMarblePosition = updatedMarbles.count - 1
-            }
-            marbles = updatedMarbles
-            currentMarble = currentMarble + 1
-            currentMarblePosition = absoluteNewMarblePosition
-            
-            return self
-            
-            
-//            return Circle(marbles: updatedMarbles, currentMarble: currentMarble + 1, currentMarblePosition: absoluteNewMarblePosition)
-        }
-        
-          mutating func attemptToAdd(marble: Int) -> (Int, Circle) {
-            var score = 0
-            guard marble % 23 != 0 && marble > 0 else {
-                // Do Jordan thing
-                score = marble
-                var tempRotation = marbles
-                
-                while tempRotation.first! != currentMarble {
-                    tempRotation.shiftInPlace()
-                }
-                
-                let marbleAtSixCCW = tempRotation.provideItem(direction: .counterClockwise, count: 6)
-                let marbleAtSevenCCW = tempRotation.provideItem(direction: .counterClockwise, count: 7)
-                
-                
-                let newMarbles = marbles.filter{ $0 != marbleAtSevenCCW }
-                score = score + marbleAtSevenCCW
-                let indexForMarbleAtSixCCW = Int(newMarbles.index(of: marbleAtSixCCW)!)
-                
-                return (score, Circle(marbles: newMarbles, currentMarble: currentMarble + 1, currentMarblePosition: indexForMarbleAtSixCCW))
-            }
-            
-            return (0, insert())
-        }
-        
-    }
-    
-    final class Day9: Day {
-        
-        required init() { }
-        
-        func part1() -> String {
-            return ""
-            let playerCount = 411
-            var ball = 0
-            var scores = [Int: Int]()
-            var circle = Circle(marbles: [0], currentMarble: 0, currentMarblePosition: 0)
-            var currentPlayer = 1
-            while ball < ballQuantity {
-                ball = ball + 1
-                if currentPlayer == (playerCount + 1) { currentPlayer = 1 }
-                let dup = circle.attemptToAdd(marble: ball)
-                if dup.0 > 0 {
-                    let currentPlayerScore = scores[currentPlayer] ?? 0
-                    scores.updateValue(dup.0 + currentPlayerScore, forKey: currentPlayer)
-                }
-                circle = dup.1
-                currentPlayer = currentPlayer + 1
-            }
-            let winningScore = scores.values.sorted{ $0 > $1 }.first!
-            let winner = scores.filter{ $0.value == winningScore }.keys.first!
-            
-            return "Winner is \(winner) with a score of \(winningScore)"
-        }
-        
-        func part2() -> String {
-            let ballQuantity = 72059
-            let playerCount = 411
-            var ball = 0
-            var scores = [Int: Int]()
-            var circle = Circle(marbles: [0], currentMarble: 0, currentMarblePosition: 0)
-            var currentPlayer = 1
-            while ball < ballQuantity {
-                ball = ball + 1
-                if currentPlayer == (playerCount + 1) { currentPlayer = 1 }
-                let dup = circle.attemptToAdd(marble: ball)
-                if dup.0 > 0 {
-                    let currentPlayerScore = scores[currentPlayer] ?? 0
-                    scores.updateValue(dup.0 + currentPlayerScore, forKey: currentPlayer)
-                }
-                circle = dup.1
-                currentPlayer = currentPlayer + 1
-            }
-            let winningScore = scores.values.sorted{ $0 > $1 }.first!
-            let winner = scores.filter{ $0.value == winningScore }.keys.first!
-            
-            return "Winner is \(winner) with a score of \(winningScore)"
-        }
-        
-    }
-    
-}

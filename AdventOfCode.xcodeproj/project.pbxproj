@@ -647,11 +647,6 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK888FH56G;
-				OTHER_CFLAGS = (
-					CFLAGS,
-					"=",
-					"\"-fno-optimize-sibling-calls\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 			};
@@ -662,12 +657,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HK888FH56G;
-				OTHER_CFLAGS = (
-					CFLAGS,
-					"=",
-					"\"-fno-optimize-sibling-calls\"",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
