@@ -87,6 +87,7 @@ extension LinkedList {
             priorNode.next = newNode
             newNode.previous = priorNode
         }
+        count += 1
     }
     
 }

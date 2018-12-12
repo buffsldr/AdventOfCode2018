@@ -5,6 +5,9 @@
 //  Created by Dave DeLong on 12/8/17.
 //  Copyright © 2017 Dave DeLong. All rights reserved.
 //
+
+// Linked List from https://hugotunius.se/2016/07/17/implementing-a-linked-list-in-swift.html
+
 enum Shift {
     
     case sevenCounterClockwise
@@ -13,12 +16,13 @@ enum Shift {
     
 }
 
-struct Balls {
+class Balls {
     
-    private var items = [0]
+    private var items: LinkedList<Int>
     
     init() {
-        items.reserveCapacity(7205990)
+        items = LinkedList()
+        items.append(value: 0)
     }
     
    private func identifyProposedIndexAfterShifting(_ shift: Shift, currentIndex: Int) -> Int {
@@ -59,16 +63,16 @@ struct Balls {
         }
     }
     
-    mutating func customInsert(item: Int, using shift: Shift, currentIndex: Int) -> Int {
+     func customInsert(item: Int, using shift: Shift, currentIndex: Int) -> Int {
         let proposedIndex = identifyProposedIndexAfterShifting(shift, currentIndex: currentIndex)
         let safeIndex = translateProposedInsertionIndexToSafeIndex(proposedIndex)
         
-        items.insert(item, at: safeIndex)
+        items.insert(value: item, at: safeIndex)
         
         return safeIndex
     }
     
-    mutating func customDeletion(at currentIndex: Int) -> Int {
+     func customDeletion(at currentIndex: Int) -> Int {
         let safeIndex = translateProposedDeletionIndexToSafeIndex(currentIndex)
         
         items.remove(at: safeIndex)
@@ -108,20 +112,20 @@ struct Balls {
     func readValueAt(index: Int) -> Int {
         let safeIndex = translateProposedReadingIndexToSafeIndex(index)
         
-        return items[safeIndex]
+        return items.value(at: safeIndex)
     }
     
 }
 
 
 
-struct BallRunner {
+class BallRunner {
     
     var currentIndex = 0
     var balls = Balls()
     var playersScores = [Int: Int]()
     
-    mutating func place(newBallNumber: Int, for player: Int) {
+     func place(newBallNumber: Int, for player: Int) {
         guard newBallNumber % 23 != 0 else {
             let value7Left = balls.readValueAt(index: currentIndex - 7)
             currentIndex = balls.customDeletion(at: currentIndex - 7)
@@ -144,8 +148,8 @@ struct BallRunner {
         var ballCount = 0
         let playerCount = 411
         var currentPlayer = 1
-        let marbles100 = 72059 * 100
-        var br = BallRunner()
+        let marbles100 = 72059
+        let br = BallRunner()
         
         while ballCount < marbles100 {
             ballCount += 1
@@ -166,5 +170,3 @@ struct BallRunner {
     }
     
 }
-
-

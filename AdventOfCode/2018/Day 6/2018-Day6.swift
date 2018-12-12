@@ -20,55 +20,77 @@ extension CGPoint: Hashable {
     
 }
 
-extension Year2018 {
+enum DistanceCheck {
+    
+    case tied
+    case range(Int, Position)
+    
+}
 
+extension Year2018 {
+    
     class Day6: Day {
         
         required init() { }
         
         let input = Day6.inputLines(trimming: true)
         
-        var allPoints: [CGPoint] {
+        var allPoints: [Position] {
             return input.map{ parse(line: $0) }
         }
         
-        func parse(line: String) -> CGPoint {
+        var maxX: Int {
+            return allPoints.map{ Int($0.x) }.max() ?? 0
+        }
+        
+        var maxY: Int {
+            return allPoints.map{ Int($0.y) }.max() ?? 0
+        }
+        
+        var allSquares: [Position] {
+            var squares = [Position]()
+            for x in 0..<maxX {
+                for y in 0..<maxY {
+                    squares.append(Position(x: x,y: y))
+                }
+            }
+            
+            return squares
+        }
+        
+        var pointDictionary: [String: Position] {
+            var pointDictionary = [String: Position]()
+            for (index, point) in allPoints.enumerated() {
+                pointDictionary.updateValue(point, forKey: "Point \(index)")
+            }
+            
+            return pointDictionary
+        }
+        
+        func parse(line: String) -> Position {
             var fakeLine = line
             let breaks: CharacterSet = CharacterSet(arrayLiteral: ",").union(CharacterSet.whitespaces)
             let rowArray = fakeLine.components(separatedBy: breaks).filter{ $0.count > 0 }
             guard let first = rowArray.first, let firstG = Int(first),  let last = rowArray.last, let lastG = Int(last) else {
-                return .zero
+                return Position(x:0, y:0)
             }
             
-            return CGPoint(x: CGFloat(firstG), y: CGFloat(lastG))
+            return Position(x: Int(firstG), y: Int(lastG))
         }
         
         func part1() -> String {
-            let maxX = allPoints.map{ $0.x }.max() ?? 0
-            let maxY = allPoints.map{ $0.y }.max() ?? 0
-            var gridPoints = [CGPoint]()
-            var dataStructure = [CGPoint: [CGPoint: CGFloat]]()
-            for xIndex in 0..<Int(maxX) {
-                for yIndex in 0..<Int(maxY) {
-                    var runningFinalPointDictionary = [CGPoint: CGFloat]()
-                    let gridPoint = CGPoint(x: xIndex, y: yIndex)
-                    gridPoints = allPoints + [gridPoint]
-                    for point in allPoints {
-                        let distanceToPoint = point.mDistanceFrom(point: gridPoint)
-                        runningFinalPointDictionary.updateValue(distanceToPoint, forKey: point)
+            //          print(allSquares)
+            
+            var scores = [Position: DistanceCheck]()
+            for point in allPoints {
+                var minDistanceToSquare = 99999
+                for square in allSquares {
+                    let distanceToSquare = point.calculateManhattanDistanceFrom(position: square)
+                    if distanceToSquare == minDistanceToSquare {
+                        let dCheck = DistanceCheck.tied
                     }
-                    dataStructure.updateValue(runningFinalPointDictionary, forKey: gridPoint)
                 }
             }
-            
-            var closestPointLookup = [CGPoint: CGPoint]()
-         
-            dataStructure.keys.forEach { lookupKey in
-                let closestPoint = dataStructure[lookupKey]!.values.sorted().first!
-                let closesPoint = dataStructure[lookupKey]!.filter{ $0.value == closestPoint }.keys.first!
-                closestPointLookup.updateValue(closesPoint, forKey: lookupKey)
-            }
-            
             
             
             return #function
@@ -79,5 +101,5 @@ extension Year2018 {
         }
         
     }
-
+    
 }

@@ -56,6 +56,10 @@ struct Position: Hashable {
         }
     }
     
+    func calculateManhattanDistanceFrom(position: Position) -> Int {
+        return (abs(position.x - x) + abs(position.y - y))
+    }
+    
     func neighbors() -> Array<Position> {
         return [
             move(.north),
