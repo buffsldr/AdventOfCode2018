@@ -7,6 +7,8 @@
 //
 
 import Foundation
+// This is Andrew Madsen's solution.... see https://github.com/armadsen/AdventOfCode2018/blob/master/Day12/Day12.swift
+
 //
 //class Pot {
 //
