@@ -69,12 +69,12 @@ enum Turn: Int {
 
 class Cart: NSObject {
     
-//    static func == (lhs: Cart, rhs: Cart) -> Bool {
-//        return lhs.position == rhs.position && lhs.heading == rhs.heading && lhs.lastTurn == rhs.lastTurn
-//    }
-
+    //    static func == (lhs: Cart, rhs: Cart) -> Bool {
+    //        return lhs.position == rhs.position && lhs.heading == rhs.heading && lhs.lastTurn == rhs.lastTurn
+    //    }
+    
     var _position: Position
-
+    
     var position: Position {
         set {
             _position = newValue
@@ -89,12 +89,12 @@ class Cart: NSObject {
     
     
     
-//    public func hash(into hasher: inout Hasher) {
-//        hasher.combine(position)
-//        hasher.combine(heading)
-//        hasher.combine(lastTurn)
-//    }
-//
+    //    public func hash(into hasher: inout Hasher) {
+    //        hasher.combine(position)
+    //        hasher.combine(heading)
+    //        hasher.combine(lastTurn)
+    //    }
+    //
     init(position: Position, heading: Heading) {
         self._position = position
         self.heading = heading
@@ -154,10 +154,9 @@ extension Year2018 {
             
             return carts
         }
-       
+        
         
         func part1() -> String {
-            var cartPositions = [Cart: Position]()
             var cartsFound = carts()
             let track = buildTrack()
             var pendingSpots = [Position]()
@@ -234,31 +233,19 @@ extension Year2018 {
                             fatalError()
                         }
                     }
-                    cartPositions.updateValue(cart.position, forKey: cart)
-                    let allValues = Array(cartPositions.values)
+                    
+                    let allValues = cartsFound.map{ $0.position }
                     let c1 = allValues.count
                     let allValuesSet = Set(allValues)
                     let c2 = allValuesSet.count
                     if c1 != c2 {
-                        let remainingCarts = cartsFound.filter{ $0.position != cart.position }
-                        let badCarts = cartsFound.filter{ $0.position == cart.position }
-                        badCarts.forEach { badCart in
-                            cartPositions.removeValue(forKey: badCart)
-                            badCart.isSafeToDrive = false
-                        }
-//                        print("Failure at \(cart.position)")
-                        cartsFound = cartsFound.filter { cart -> Bool in
-                            return !badCarts.contains(cart)
-                        }
-                        if cartsFound.count == 1 {
-                            crashFree = false
-                        }
+                        cartsFound = cartsFound.filter{ $0.position != cart.position }
                     }
                 }
                 if cartsFound.count == 1 {
                     let a = 123
                 }
- 
+                
             }
             let answer = cartsFound.first!
             return #function
