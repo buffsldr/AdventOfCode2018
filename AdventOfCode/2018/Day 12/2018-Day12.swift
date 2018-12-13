@@ -7,104 +7,206 @@
 //
 
 import Foundation
+//
+//class Pot {
+//
+//    var hasPlant: Bool
+//    let index: Int
+//
+//    init(index: Int, hasPlant: Bool) {
+//        self.hasPlant = hasPlant
+//        self.index = index
+//    }
+//
+//    var previousPot: Pot?
+//    var nextPot: Pot?
+//
+//    func pot(atOffset offset: Int) -> Pot {
+//        var result = self
+//        for _ in 0..<offset.magnitude {
+//            result = offset > 0 ? result.nextPot! : result.previousPot!
+//        }
+//        return result
+//    }
+//
+//    func insert(between left: Pot?, and right: Pot?) {
+//        let leftPot = left ?? Pot(index: index - 1, hasPlant: false)
+//        let rightPot = right ?? Pot(index: index + 1, hasPlant: false)
+//
+//        leftPot.nextPot = self
+//        previousPot = leftPot
+//        rightPot.previousPot = self
+//        nextPot = rightPot
+//    }
+//
+//    var pattern: String {
+//        let left = leftEnvironment.map{ $0.hasPlant ? "#" : "." }
+//        let right = rightEnvironment.map{ $0.hasPlant ? "#" : "." }
+//        let total = left + [(hasPlant ? "#" : ".")] + right
+//
+//        return total.reduce("", { (rollingString, localString) -> String in
+//            return rollingString + localString
+//        })
+//    }
+//
+//    var leftEnvironment: [Pot] {
+//        let potL1 = previousPot ?? Pot(index: index - 1, hasPlant: false)
+//        let potL2 = potL1.previousPot ?? Pot(index: potL1.index - 1, hasPlant: false)
+//
+//        return [potL2, potL1]
+//    }
+//
+//    var rightEnvironment: [Pot] {
+//        let potR1 = nextPot ?? Pot(index: index + 1, hasPlant: false)
+//        let potR2 = potR1.nextPot ?? Pot(index: potR1.index + 1, hasPlant: false)
+//
+//        return [potR1, potR2]
+//    }
+//
+//}
 
-extension String {
-    func split(by length: Int) -> [String] {
-        var startIndex = self.startIndex
-        var results = [Substring]()
-        
-        while startIndex < self.endIndex {
-            let endIndex = self.index(startIndex, offsetBy: length, limitedBy: self.endIndex) ?? self.endIndex
-            results.append(self[startIndex..<endIndex])
-            startIndex = endIndex
-        }
-        
-        return results.map { String($0) }
-    }
-}
+let test = false
+
+let initialString = ".#####.##.#.##...#.#.###..#.#..#..#.....#..####.#.##.#######..#...##.#..#.#######...#.#.#..##..#.#.#"
+
+let inputString = """
+#..#. => .
+##... => #
+#.... => .
+#...# => #
+...#. => .
+.#..# => #
+#.#.# => .
+..... => .
+##.## => #
+##.#. => #
+###.. => #
+#.##. => .
+#.#.. => #
+##..# => #
+..#.# => #
+..#.. => .
+.##.. => .
+...## => #
+....# => .
+#.### => #
+#..## => #
+..### => #
+####. => #
+.#.#. => #
+.#### => .
+###.# => #
+##### => #
+.#.## => .
+.##.# => .
+.###. => .
+..##. => .
+.#... => #
+"""
+
+let testInputString = """
+...## => #
+..#.. => #
+.#... => #
+.#.#. => #
+.#.## => #
+.##.. => #
+.#### => #
+#.#.# => #
+#.### => #
+##.#. => #
+##.## => #
+###.. => #
+###.# => #
+####. => #
+"""
+
+let initialInput = (test ? "#..#.#..##......###...###" : initialString)
+let padding = 5
 
 extension Year2018 {
     
-    struct PlantRow: Hashable {
-        
-        let l2: Bool
-        let l1: Bool
-        let c: Bool
-        let r1: Bool
-        let r2: Bool
-        
-        init(state: String) {
-            self.l2 = Array(state)[0] == "#"
-            self.l1 = Array(state)[1] == "#"
-            self.c = Array(state)[2] == "#"
-            self.r1 = Array(state)[3] == "#"
-            self.r2 = Array(state)[4] == "#"
-        }
-        
-        public func hash(into hasher: inout Hasher) {
-            hasher.combine(l2)
-            hasher.combine(l1)
-            hasher.combine(c)
-            hasher.combine(r1)
-            hasher.combine(r2)
-        }
-    }
-    
     class Day12: Day {
-        var initialState =  "...#..#.#..##......###...###..........." //".#####.##.#.##...#.#.###..#.#..#..#.....#..####.#.##.#######..#...##.#..#.#######...#.#.#..##..#.#.#"
-        required init() { }
+        //: [Previous](@previous)
         
-        let input = Day12.inputLines()
+        func desc(of pots: [Bool]) -> String {
+            return pots.map { $0 ? "#" : "." }.joined()
+        }
         
-        var matches: [PlantRow: Bool] {
-            var rollingD = [PlantRow: Bool]()
-            let words = input.forEach{ string  in
-                let rawString = string.components(separatedBy: "=>").filter{ $0.count > 0 }
-                let plantPart = rawString.first!
-                let isGood = plantPart.last! == "#"
-                
-                rollingD.updateValue(isGood, forKey: PlantRow(state: plantPart))
+        
+        //print(rules.map { "\(desc(of: $0.0)) => \($0.1 ? "#" : ".")" }.joined(separator: "\n"))
+        
+        //print("\(0):  \(desc(of: pots))")
+        
+        func sum(of pots: [Bool]) -> Int {
+            return pots.enumerated().reduce(0) {
+                $0 + ($1.element ? $1.offset - padding : 0)
             }
-            
-            return rollingD
-            
         }
-        
-        var allPlantRows: [PlantRow] {
-            var rollingPots = [PlantRow]()
+ 
+        required init() {
             
-            return initialState.split(by: 5).map{ PlantRow(state: $0) }
-        }
-        
-        func calculateAllPlantRowsFrom(s1: String) -> [PlantRow] {
-            let s = s1.count == 39 ? String(s1.dropFirst(1)) : s1
-            guard s.count > 4 else { return [] }
-            guard let match = Array(s).match else { return [] }
-            let ss1: String = (s as NSString).substring(to: 5) // "Stack"
-            
-            return [PlantRow(state: String(ss1))] + calculateAllPlantRowsFrom(s1: String(match.tail))
         }
         
         func part1() -> String {
-            let s1 = PlantRow(state: "..#..")
-            var g1 = calculateAllPlantRowsFrom(s1: initialState)
+            let input = (test ? testInputString : inputString).components(separatedBy: "\n")
             
-            for index in 0..<20 {
-                g1 = churn(plants: g1)
+            var pots = initialInput.map { $0 == "#" }
+            
+            pots.insert(contentsOf: Array<Bool>(repeating: false, count: padding), at: 0)
+            pots.append(contentsOf: Array<Bool>(repeating: false, count: padding))
+            var rules = [[Bool] : Bool]()
+            for line in input {
+                let comps = line.components(separatedBy: " ")
+                let rule = comps[0].map { $0 == "#" }
+                let result = comps[2]
+                rules[rule] = result == "#"
+            }
+            
+            var valAt1K = 0
+            for i in 1...2000 {
+                var newPots = pots
+                for index in 2..<pots.count {
+                    var pattern: [Bool]
+                    if index+2 >= pots.count {
+                        pattern = Array(pots[(index-2)..<pots.count])
+                        let padding = Array<Bool>(repeating: false, count: 5-pattern.count)
+                        pattern.append(contentsOf: padding)
+                        if !pattern.contains(true) { continue }
+                        newPots.append(contentsOf: padding)
+                    } else {
+                        pattern = Array(pots[(index-2)...(index+2)])
+                    }
+                    
+                    if let result = rules[pattern] {
+                        newPots[index] = result
+                    } else {
+                        newPots[index] = false
+                    }
+                }
+                //    print("\(i):  \(desc(of: newPots))")
+                
+                if i == 20 {
+                    print("part 1: \(sum(of: newPots))")
+                }
+                
+                if i == 1000 {
+                    valAt1K = sum(of: newPots)
+                }
+                
+                if i == 2000 {
+                    let changePer1K = sum(of: newPots) - valAt1K
+                    let part2Result = sum(of: newPots) + ((50000000000 - 2000) / 1000) * changePer1K
+                    print("part 2: \(part2Result)")
+                }
+                
+                pots = newPots
             }
             
             return #function
         }
         
-        func churn(plants: [PlantRow]) -> [PlantRow] {
-            let keys = Array(matches.keys)
-            let validKeys = keys.filter { key -> Bool in
-                return matches[key]!
-            }
-            
-            return []
-            
-        }
+        
         //
         func part2() -> String {
             return #function

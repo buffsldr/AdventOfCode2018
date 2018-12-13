@@ -6,136 +6,67 @@
 //  Copyright © 2017 Dave DeLong. All rights reserved.
 //
 
-// Linked List from https://hugotunius.se/2016/07/17/implementing-a-linked-list-in-swift.html
+// I got stuck on implementing a linked list properly and used Andrew Madsen's solution
+// https://github.com/armadsen/AdventOfCode2018/blob/master/Day9/Day9.swift
 
-enum Shift {
+class Marble {
     
-    case sevenCounterClockwise
-    case sixCounterClockwise
-    case twoClockwise
+    init(index: Int) {
+        self.index = index
+    }
     
+    func marble(atOffset offset: Int) -> Marble {
+        var result = self
+        for _ in 0..<offset.magnitude {
+            result = offset > 0 ? result.nextMarble! : result.previousMarble!
+        }
+        return result
+    }
+    
+    func insert(between left: Marble, and right: Marble) {
+        left.nextMarble = self
+        previousMarble = left
+        right.previousMarble = self
+        nextMarble = right
+    }
+    
+    func remove() {
+        previousMarble?.nextMarble = nextMarble
+        nextMarble?.previousMarble = previousMarble
+    }
+    
+    let index: Int
+    
+    var previousMarble: Marble?
+    var nextMarble: Marble?
 }
 
-class Balls {
+func highScoreInGameWith(numberOfPlayers: Int, lastMarble: Int) -> Int {
+    var current = Marble(index: 0)
+    current.insert(between: current, and: current)
     
-    private var items: LinkedList<Int>
+    var scores = Array<Int>(repeating: 0, count: numberOfPlayers)
     
-    init() {
-        items = LinkedList()
-        items.append(value: 0)
-    }
-    
-   private func identifyProposedIndexAfterShifting(_ shift: Shift, currentIndex: Int) -> Int {
-        let proposedIndex: Int
-        switch shift {
-        case .sevenCounterClockwise:
-            proposedIndex = currentIndex - 7
-        case .sixCounterClockwise:
-            proposedIndex = currentIndex - 6
-        case .twoClockwise:
-            proposedIndex = currentIndex + 2
-        }
-        
-        return proposedIndex
-    }
-    
-    func translateProposedInsertionIndexToSafeIndex(_ proposedIndex: Int) -> Int {
-        let itemsCountLocal = items.count
-        switch (proposedIndex >= 0, proposedIndex <= itemsCountLocal) {
-        case (true, true):
-            // Safe
-            return proposedIndex
-        case (true, false):
-            let realIndexIsLastSpot = itemsCountLocal - 1
-            let realIndexIsNextToLastSpot = itemsCountLocal - 2
-            if proposedIndex == realIndexIsLastSpot {
-                return 1
-            } else if proposedIndex == realIndexIsNextToLastSpot {
-                return 0
+    var i = 0
+    while true {
+        for player in 0..<numberOfPlayers {
+            i += 1
+            let newMarble = Marble(index: i)
+            if newMarble.index % 23 == 0 {
+                scores[player] += newMarble.index
+                let marbleToRemove = current.marble(atOffset: -7)
+                current = marbleToRemove.nextMarble!
+                marbleToRemove.remove()
+                scores[player] += marbleToRemove.index
             } else {
-                // This fellow is positive. but a little too big so he needs to go around the horn
-                return translateProposedInsertionIndexToSafeIndex(proposedIndex - itemsCountLocal)
+                newMarble.insert(between: current.marble(atOffset: 1), and: current.marble(atOffset: 2))
+                current = newMarble
             }
             
-        case (false, _):
-            // All negative items
-            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
+            if newMarble.index == lastMarble {
+                return scores.max()!
+            }
         }
-    }
-    
-     func customInsert(item: Int, using shift: Shift, currentIndex: Int) -> Int {
-        let proposedIndex = identifyProposedIndexAfterShifting(shift, currentIndex: currentIndex)
-        let safeIndex = translateProposedInsertionIndexToSafeIndex(proposedIndex)
-        
-        items.insert(value: item, at: safeIndex)
-        
-        return safeIndex
-    }
-    
-     func customDeletion(at currentIndex: Int) -> Int {
-        let safeIndex = translateProposedDeletionIndexToSafeIndex(currentIndex)
-        
-        items.remove(at: safeIndex)
-        
-        return safeIndex
-    }
-    
-   private func translateProposedDeletionIndexToSafeIndex(_ proposedIndex: Int) -> Int {
-        let itemsCountLocal = items.count
-        switch (proposedIndex >= 0, proposedIndex < itemsCountLocal) {
-        case (true, true):
-            // Safe
-            return proposedIndex
-        case (true, false):
-            // This fellow is positive. but a little too big so he needs to go around the horn
-            return translateProposedInsertionIndexToSafeIndex(proposedIndex - (itemsCountLocal))
-        case (false, _):
-            // All negative items
-            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
-        }
-    }
-    
-   private func translateProposedReadingIndexToSafeIndex(_ proposedIndex: Int) -> Int {
-        let itemsCountLocal = items.count
-        switch (proposedIndex >= 0, proposedIndex < itemsCountLocal) {
-        case (true, true):
-            return proposedIndex
-        case (true, false):
-            // This fellow is positive. but a little too big so he needs to go around the horn
-            return translateProposedReadingIndexToSafeIndex(proposedIndex - itemsCountLocal)
-        case (false, _):
-            // All negative items
-            return translateProposedInsertionIndexToSafeIndex(itemsCountLocal + proposedIndex)
-        }
-    }
-    
-    func readValueAt(index: Int) -> Int {
-        let safeIndex = translateProposedReadingIndexToSafeIndex(index)
-        
-        return items.value(at: safeIndex)
-    }
-    
-}
-
-
-
-class BallRunner {
-    
-    var currentIndex = 0
-    var balls = Balls()
-    var playersScores = [Int: Int]()
-    
-     func place(newBallNumber: Int, for player: Int) {
-        guard newBallNumber % 23 != 0 else {
-            let value7Left = balls.readValueAt(index: currentIndex - 7)
-            currentIndex = balls.customDeletion(at: currentIndex - 7)
-            let currentPlayerScore = playersScores[player] ?? 0
-            playersScores.updateValue(currentPlayerScore + value7Left + newBallNumber, forKey: player)
-            
-            return
-        }
-        
-        currentIndex = balls.customInsert(item: newBallNumber, using: .twoClockwise, currentIndex: currentIndex)
     }
     
 }
@@ -145,28 +76,11 @@ class BallRunner {
     required init() { }
     
     func part1() -> String {
-        var ballCount = 0
-        let playerCount = 411
-        var currentPlayer = 1
-        let marbles100 = 72059
-        let br = BallRunner()
-        
-        while ballCount < marbles100 {
-            ballCount += 1
-            if currentPlayer == (playerCount + 1) { currentPlayer = 1 }
-            br.place(newBallNumber: ballCount, for: currentPlayer)
-            currentPlayer = currentPlayer + 1
-        }
-        
-        let maxScore = br.playersScores.values.max()!
-
-        return "\(maxScore)"
-        
+        return String(highScoreInGameWith(numberOfPlayers: 411, lastMarble: 72059))
     }
     
     func part2() -> String {
-        
-        return "W"
+        return String(highScoreInGameWith(numberOfPlayers: 411, lastMarble: 72059 * 100))
     }
     
 }

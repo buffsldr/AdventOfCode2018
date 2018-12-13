@@ -44,7 +44,11 @@ enum Heading {
 
 struct Position: Hashable {
     static func ==(lhs: Position, rhs: Position) -> Bool { return lhs.x == rhs.x && lhs.y == rhs.y }
-    var hashValue: Int { return x * 1000 + y}
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
+    }
     let x: Int; let y: Int
     
     func move(_ heading: Heading) -> Position {
@@ -68,6 +72,27 @@ struct Position: Hashable {
             move(.west)
         ]
     }
+}
+
+extension Heading {
+    
+    static func heading(for character: Character) -> Heading? {
+        switch character {
+        case ">":
+            return Heading.east
+        case "<":
+            return Heading.west
+        case "v":
+            return Heading.south
+        case "^":
+            return Heading.north
+        default:
+            return nil
+        }
+    }
+    
+
+    
 }
 
 extension Array where Element: RandomAccessCollection, Element.Index == Int {

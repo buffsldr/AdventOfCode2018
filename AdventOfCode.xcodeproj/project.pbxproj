@@ -59,6 +59,7 @@
 /* Begin PBXFileReference section */
 		4D48739021B59A6F0016757D /* CGRect+Extras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGRect+Extras.swift"; sourceTree = "<group>"; };
 		4DA08E9D21C06B6B002D9A3C /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
+		4DDE1A9B21C2400800980353 /* input.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
 		4DE7485921B3409500A52359 /* AdventOfCode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AdventOfCode; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DE7485C21B3409500A52359 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		4DE7486921B343A400A52359 /* 2018.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 2018.swift; sourceTree = "<group>"; };
@@ -77,7 +78,6 @@
 		4DE7487D21B343A400A52359 /* 2018-Day14.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "2018-Day14.swift"; sourceTree = "<group>"; };
 		4DE7487E21B343A400A52359 /* input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
 		4DE7488021B343A400A52359 /* 2018-Day13.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "2018-Day13.swift"; sourceTree = "<group>"; };
-		4DE7488121B343A400A52359 /* input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
 		4DE7488321B343A400A52359 /* 2018-Day12.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "2018-Day12.swift"; sourceTree = "<group>"; };
 		4DE7488421B343A400A52359 /* input.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
 		4DE7488621B343A400A52359 /* 2018-Day15.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "2018-Day15.swift"; sourceTree = "<group>"; };
@@ -256,8 +256,8 @@
 		4DE7487F21B343A400A52359 /* Day 13 */ = {
 			isa = PBXGroup;
 			children = (
+				4DDE1A9B21C2400800980353 /* input.txt */,
 				4DE7488021B343A400A52359 /* 2018-Day13.swift */,
-				4DE7488121B343A400A52359 /* input.txt */,
 			);
 			path = "Day 13";
 			sourceTree = "<group>";

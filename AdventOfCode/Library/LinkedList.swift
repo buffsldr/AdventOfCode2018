@@ -69,7 +69,7 @@ public final class LinkedList<T> {
 extension LinkedList {
     
     public func insert(value: T, at location: Int) {
-        guard location < (count) else {
+        guard location < count else {
             append(value: value)
             return
         }
