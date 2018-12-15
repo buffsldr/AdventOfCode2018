@@ -157,6 +157,7 @@ extension Year2018 {
         
         
         func part1() -> String {
+            var ticks = 0
             var cartsFound = carts()
             let track = buildTrack()
             var pendingSpots = [Position]()
@@ -241,11 +242,11 @@ extension Year2018 {
                     if c1 != c2 {
                         cartsFound = cartsFound.filter{ $0.position != cart.position }
                     }
+                    ticks += 1
                 }
                 if cartsFound.count == 1 {
                     let a = 123
                 }
-                
             }
             let answer = cartsFound.first!
             return #function
