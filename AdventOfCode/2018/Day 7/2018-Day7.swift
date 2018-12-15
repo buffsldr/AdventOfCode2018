@@ -30,12 +30,7 @@ struct TimeLog {
 
 class LetterDelegate {
     
-    var completedLetters = [String]() {
-        didSet {
-            
-            let a = 123
-        }
-    }
+    var ldCompletedLetters = [String]() 
     private var letterRelationship = [String: [String]]()
     
     var timeLog = [TimeLog]() {
@@ -53,7 +48,7 @@ class LetterDelegate {
     
     func remainingLetters(with completedWork: [TimeLog], and wipWork: [String]) -> [String] {
         let localFinishedLetters = completedWork.map{ $0.letter } + wipWork
-        completedLetters = completedWork.map{ $0.letter }
+        ldCompletedLetters = completedWork.map{ $0.letter }
         let completedSet = Set(localFinishedLetters)
         let letterRelationshipSet = Set(Array(letterRelationship.keys))
         let unDone = letterRelationshipSet.subtracting(completedSet)
@@ -67,7 +62,7 @@ class LetterDelegate {
         var isReady = true
         for child in children {
             if isReady {
-                isReady = completedLetters.contains(child)
+                isReady = ldCompletedLetters.contains(child)
             }
         }
         
@@ -75,7 +70,7 @@ class LetterDelegate {
     }
     
     func didFinish(letter: String, with timeLogPassed: TimeLog) {
-        completedLetters = completedLetters + [letter]
+        ldCompletedLetters = ldCompletedLetters + [letter]
         switch timeLogPassed.elf {
         case 1:
             timeLog = timeLog + [timeLogPassed]
@@ -120,13 +115,11 @@ class Worker {
         
         return currentTime > validWork.endTime
     }
-
+    
     func assign(letter: String, startTime: Int) {
         let alphabet =  Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map{ String($0) }
-        let duration = (alphabet.index(of: letter) ?? 124) + 1
-        if duration == 125 {
-            print("Failed here because letter is not in alphabet \(letter) and its count is \(letter.count)")
-        }
+        let duration = alphabet.index(of: letter)! + 1 + 60
+
         let timeLog = TimeLog(globalStartTime: startTime, duration: duration, elf: number, letter: letter)
         
         currentWork = timeLog
@@ -172,8 +165,10 @@ class Run {
     var currentTime = 0
     
     var worker1: Worker = Worker(number: 1)
-    
     var worker2: Worker = Worker(number: 2)
+    var worker3: Worker = Worker(number: 3)
+    var worker4: Worker = Worker(number: 4)
+    var worker5: Worker = Worker(number: 5)
     
     func provideNextWorkPiece() -> String? {
         let remainingLetters = letterDelegate.remainingLetters(with: completedWork, and: inProgessWork)
@@ -195,24 +190,36 @@ class Run {
     }
     
     func availableWorker(at time: Int) -> Worker? {
-        guard worker1.isAvailableToWork(time) else {
-            guard worker2.isAvailableToWork(time) else { return nil }
-            
-            return worker2
-        }
-        
-        return worker1
+        let allWorkers = [worker1, worker2, worker3, worker4, worker5]
+
+        return allWorkers.filter{ $0.isAvailableToWork(time) }.first
     }
     
     func requestCompletedWork(at time: Int) {
         let completedWork1 = worker1.provideFinishedWork(for: time)
         let completedWork2 = worker2.provideFinishedWork(for: time)
+        let completedWork3 = worker3.provideFinishedWork(for: time)
+        let completedWork4 = worker4.provideFinishedWork(for: time)
+        let completedWork5 = worker5.provideFinishedWork(for: time)
+
         var completedWorkLocal = [TimeLog]()
         if let validCompletedWork1 = completedWork1 {
             completedWorkLocal = completedWorkLocal + [validCompletedWork1]
         }
         
         if let validCompletedWork2 = completedWork2 {
+            completedWorkLocal = completedWorkLocal + [validCompletedWork2]
+        }
+
+        if let validCompletedWork2 = completedWork3 {
+            completedWorkLocal = completedWorkLocal + [validCompletedWork2]
+        }
+
+        if let validCompletedWork2 = completedWork4 {
+            completedWorkLocal = completedWorkLocal + [validCompletedWork2]
+        }
+
+        if let validCompletedWork2 = completedWork5 {
             completedWorkLocal = completedWorkLocal + [validCompletedWork2]
         }
         guard completedWorkLocal.count > 0 else { return }
@@ -227,6 +234,7 @@ class Run {
                 letterDelegate.parse(line: linePassed)
             }
         }
+        
         var time = -1
         while hasRemainingWork {
             time += 1
@@ -242,12 +250,33 @@ class Run {
                     availableWorkerFound2.assign(letter: nextWorkPiece2, startTime: time)
                     inProgessWork = inProgessWork + [nextWorkPiece2]
                 }
+                
+                // We might have another worker waiting
+                if let availableWorkerFound2 = availableWorker(at: time), let nextWorkPiece2 = provideNextWorkPiece(), nextWorkPiece2.count > 0 {
+                    availableWorkerFound2.assign(letter: nextWorkPiece2, startTime: time)
+                    inProgessWork = inProgessWork + [nextWorkPiece2]
+                }
+
+                // We might have another worker waiting
+                if let availableWorkerFound2 = availableWorker(at: time), let nextWorkPiece2 = provideNextWorkPiece(), nextWorkPiece2.count > 0 {
+                    availableWorkerFound2.assign(letter: nextWorkPiece2, startTime: time)
+                    inProgessWork = inProgessWork + [nextWorkPiece2]
+                }
+
+                // We might have another worker waiting
+                if let availableWorkerFound2 = availableWorker(at: time), let nextWorkPiece2 = provideNextWorkPiece(), nextWorkPiece2.count > 0 {
+                    availableWorkerFound2.assign(letter: nextWorkPiece2, startTime: time)
+                    inProgessWork = inProgessWork + [nextWorkPiece2]
+                }
+                
+                
+                
             }
             // Whatever happens
         }
         print(completedWork.map{ $0.letter} )
         print(completedWork.last!.endTime)
-
+        
     }
     
 }
@@ -294,7 +323,7 @@ extension Year2018 {
         }
         
         func part2() -> String {
-            let runner = Run(originalWorkCount: 6, lines: lines)
+            let runner = Run(originalWorkCount: 26, lines: lines)
             
             
             runner.runner()
