@@ -8,8 +8,6 @@
 
 import Foundation
 
-var globalTime = 0
-
 struct TimeLog {
     
     let globalStartTime: Int
@@ -32,7 +30,12 @@ struct TimeLog {
 
 class LetterDelegate {
     
-    var completedLetters = [String]()
+    var completedLetters = [String]() {
+        didSet {
+            
+            let a = 123
+        }
+    }
     private var letterRelationship = [String: [String]]()
     
     var timeLog = [TimeLog]() {
@@ -48,8 +51,10 @@ class LetterDelegate {
     }
     var globalTimeBase = 0
     
-    func remainingLetters() -> [String] {
-        let completedSet = Set(completedLetters)
+    func remainingLetters(with completedWork: [TimeLog], and wipWork: [String]) -> [String] {
+        let localFinishedLetters = completedWork.map{ $0.letter } + wipWork
+        completedLetters = completedWork.map{ $0.letter }
+        let completedSet = Set(localFinishedLetters)
         let letterRelationshipSet = Set(Array(letterRelationship.keys))
         let unDone = letterRelationshipSet.subtracting(completedSet)
         
@@ -68,19 +73,6 @@ class LetterDelegate {
         
         return isReady
     }
-    
-    func willExecute(letter: String, localTime: Int) -> TimeLog {
-        let nextAvailabilityForElf1 = timeLog.filter{ $0.elf == 1 }.last?.endTime ?? 0  //(timeLog1.last?.globalStartTime ?? 0) +  (timeLog1.last?.duration ?? 0)
-        let nextAvailabilityForElf2 = timeLog.filter{ $0.elf == 2 }.last?.endTime ?? 0  //(timeLog1.last?.globalStartTime ?? 0) +  (timeLog1.last?.duration ?? 0)
-        let nextElf = nextAvailabilityForElf2 < nextAvailabilityForElf1 ? 2 : 1
-        let alphabet =  Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map{ String($0) }
-        let letterDuration = alphabet.index(of: letter)! + 1
-        
-        var nextStartTime = nextElf == 1 ? nextAvailabilityForElf1 : nextAvailabilityForElf2
-        
-        return TimeLog(globalStartTime: globalTimeBase, duration: letterDuration, elf: nextElf, letter: letter)
-    }
-    
     
     func didFinish(letter: String, with timeLogPassed: TimeLog) {
         completedLetters = completedLetters + [letter]
@@ -110,6 +102,152 @@ class LetterDelegate {
         let existingDependencies = letterRelationship[parentRule] ?? []
         let newDependencies: Set<String> = Set(existingDependencies).union(Set([childRule]))
         letterRelationship.updateValue(Array(newDependencies), forKey: parentRule)
+    }
+    
+}
+
+class Worker {
+    
+    let number: Int
+    private var currentWork: TimeLog?
+    
+    init(number: Int) {
+        self.number = number
+    }
+    
+    func isAvailableToWork(_ currentTime: Int) -> Bool {
+        guard let validWork = currentWork else { return true }
+        
+        return currentTime > validWork.endTime
+    }
+
+    func assign(letter: String, startTime: Int) {
+        let alphabet =  Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map{ String($0) }
+        let duration = (alphabet.index(of: letter) ?? 124) + 1
+        if duration == 125 {
+            print("Failed here because letter is not in alphabet \(letter) and its count is \(letter.count)")
+        }
+        let timeLog = TimeLog(globalStartTime: startTime, duration: duration, elf: number, letter: letter)
+        
+        currentWork = timeLog
+    }
+    
+    func provideFinishedWork(for time: Int) -> TimeLog? {
+        guard let validWork = currentWork else { return nil }
+        guard validWork.endTime <= time else { return nil }
+        // Clear out the current work since it is done
+        currentWork = nil
+        
+        return validWork
+    }
+    
+    
+    
+}
+
+class Run {
+    
+    let lines: [String]
+    let originalWorkCount: Int
+    
+    init(originalWorkCount: Int, lines: [String]) {
+        self.originalWorkCount = originalWorkCount
+        self.lines = lines
+    }
+    
+    var letterDelegate = LetterDelegate()
+    private var completedWork = [TimeLog]() {
+        didSet {
+            // since
+            if completedWork.count == originalWorkCount {
+                hasRemainingWork = false
+            }
+        }
+    }
+    
+    var hasRemainingWork = true
+    
+    private var inProgessWork = [String]()
+    
+    var currentTime = 0
+    
+    var worker1: Worker = Worker(number: 1)
+    
+    var worker2: Worker = Worker(number: 2)
+    
+    func provideNextWorkPiece() -> String? {
+        let remainingLetters = letterDelegate.remainingLetters(with: completedWork, and: inProgessWork)
+        var readyItems = [String]()
+        remainingLetters.forEach { letter in
+            if letterDelegate.isLetterReady(letter){
+                readyItems = readyItems + [letter]
+            }
+        }
+        let sortedList = readyItems.sorted{ $0 < $1 }
+        guard sortedList.count > 0 else { return nil }
+        
+        return sortedList.first
+    }
+    
+    func assign(letter: String, to worker: Worker, at startTime: Int) {
+        worker.assign(letter: letter, startTime: startTime)
+        inProgessWork = inProgessWork + [letter]
+    }
+    
+    func availableWorker(at time: Int) -> Worker? {
+        guard worker1.isAvailableToWork(time) else {
+            guard worker2.isAvailableToWork(time) else { return nil }
+            
+            return worker2
+        }
+        
+        return worker1
+    }
+    
+    func requestCompletedWork(at time: Int) {
+        let completedWork1 = worker1.provideFinishedWork(for: time)
+        let completedWork2 = worker2.provideFinishedWork(for: time)
+        var completedWorkLocal = [TimeLog]()
+        if let validCompletedWork1 = completedWork1 {
+            completedWorkLocal = completedWorkLocal + [validCompletedWork1]
+        }
+        
+        if let validCompletedWork2 = completedWork2 {
+            completedWorkLocal = completedWorkLocal + [validCompletedWork2]
+        }
+        guard completedWorkLocal.count > 0 else { return }
+        // if we have two items, we need to sorth them based on name
+        completedWorkLocal = completedWorkLocal.sorted{ $0.letter < $1.letter }
+        completedWork = completedWork + completedWorkLocal
+    }
+    
+    func runner() {
+        lines.forEach{ linePassed in
+            if linePassed.count > 0 {
+                letterDelegate.parse(line: linePassed)
+            }
+        }
+        var time = -1
+        while hasRemainingWork {
+            time += 1
+            requestCompletedWork(at: time)
+            if hasRemainingWork {
+                if let availableWorkerFound = availableWorker(at: time), let nextWorkPiece = provideNextWorkPiece(), nextWorkPiece.count > 0 {
+                    availableWorkerFound.assign(letter: nextWorkPiece, startTime: time)
+                    inProgessWork = inProgessWork + [nextWorkPiece]
+                    
+                }
+                // We might have another worker waiting
+                if let availableWorkerFound2 = availableWorker(at: time), let nextWorkPiece2 = provideNextWorkPiece(), nextWorkPiece2.count > 0 {
+                    availableWorkerFound2.assign(letter: nextWorkPiece2, startTime: time)
+                    inProgessWork = inProgessWork + [nextWorkPiece2]
+                }
+            }
+            // Whatever happens
+        }
+        print(completedWork.map{ $0.letter} )
+        print(completedWork.last!.endTime)
+
     }
     
 }
@@ -156,41 +294,12 @@ extension Year2018 {
         }
         
         func part2() -> String {
-            let letterDelegate = LetterDelegate()
-            var timeLogs = [TimeLog]()
+            let runner = Run(originalWorkCount: 6, lines: lines)
             
-            lines.forEach{ linePassed in
-                letterDelegate.parse(line: linePassed)
-            }
-            let remainingLettersHere = letterDelegate.remainingLetters()
-            var count = remainingLettersHere.count
-            var isOptimized = false
-            while count > 0 {
-                let remainingLetters = letterDelegate.remainingLetters()
-                var readyItems = [String]()
-                remainingLetters.forEach { letter in
-                    if letterDelegate.isLetterReady(letter){
-                        readyItems = readyItems + [letter]
-                    }
-                }
-                let sortedList = readyItems.sorted{ $0 < $1 }
-                
-                if let firstItemFound = sortedList.first {
-                    let localLog = letterDelegate.willExecute(letter: firstItemFound, localTime: )
-                    timeLogs = timeLogs + [localLog]
-                    letterDelegate.didFinish(letter: firstItemFound, with: localLog)
-                }
-                
-                
-                count = letterDelegate.remainingLetters().count
-            }
-            let answer = letterDelegate.completedLetters.reduce("") { (rollingString, letter) -> String in
-                return rollingString + letter
-            }
-            let a1 = timeLogs.sorted{ $0.endTime < $1.endTime }.map{ $0.letter }.reduce("") { (rollingString, letter) -> String in
-                return rollingString + letter
-            }
-            return a1
+            
+            runner.runner()
+            
+            return "ok"
         }
         
         
