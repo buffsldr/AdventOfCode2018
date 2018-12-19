@@ -41,7 +41,7 @@ enum Category: Int {
     static func createFrom(fakeValue: Int) -> Category {
         switch fakeValue {
         case 0:
-            return Category.addr
+            return Category.borr
         case 1:
             return Category.addr
         case 2:
@@ -51,7 +51,7 @@ enum Category: Int {
         case 4:
             return Category.eqri
         case 5:
-            return Category.bori
+            return Category.eqir
         case 6:
             return Category.gtri
         case 7:
@@ -71,7 +71,7 @@ enum Category: Int {
         case 14:
             return Category.bani
         case 15:
-            return Category.eqir
+            return Category.bori
         default:
             fatalError()
         }
@@ -315,6 +315,10 @@ extension Year2018 {
                     let originalHouse = RegisterHouse(register0: o1, register1: o2, register2: o3, register3: o4)
                     let localInstruction = dataInput!.instruction.modifiedInstructionUsing(category: category)
                     let finalHouse = dataInput!.after
+                    if o3 == dataInput!.after.register2 && dataInput?.instruction.opCode == .setr {
+                        
+                        let a = 123
+                    }
                     if categoriesCreating(finalHouse: finalHouse, from: originalHouse, using: localInstruction) {
                         possibleMatches = possibleMatches + [localInstruction.opCode!]
                     }
@@ -322,6 +326,8 @@ extension Year2018 {
                 if possibleMatches.count >= 3 {
                     count += 1
                 }
+                
+                
                 
                 var existingMatches = possibleOwners[dataInput!.instruction.opCode!.rawValue] ?? []
                 if existingMatches.count == 0 {
@@ -418,3 +424,54 @@ extension Year2018 {
     }
     
 }
+
+//
+//▿ 16 elements
+//    ▿ 0 : Solution
+//- number : 10
+//- category : AdventOfCode.Category.muli
+//▿ 1 : Solution
+//- number : 7
+//- category : AdventOfCode.Category.mulr
+//▿ 2 : Solution
+//- number : 3
+//- category : AdventOfCode.Category.addi
+//▿ 3 : Solution
+//- number : 0
+//- category : AdventOfCode.Category.borr
+//▿ 4 : Solution
+//- number : 1
+//- category : AdventOfCode.Category.addr
+//▿ 5 : Solution
+//- number : 15
+//- category : AdventOfCode.Category.bori
+//▿ 6 : Solution
+//- number : 9
+//- category : AdventOfCode.Category.gtir
+//▿ 7 : Solution
+//- number : 12
+//- category : AdventOfCode.Category.seti
+//▿ 8 : Solution
+//- number : 11
+//- category : AdventOfCode.Category.banr
+//▿ 9 : Solution
+//- number : 8
+//- category : AdventOfCode.Category.setr
+//▿ 10 : Solution
+//- number : 14
+//- category : AdventOfCode.Category.bani
+//▿ 11 : Solution
+//- number : 4
+//- category : AdventOfCode.Category.eqri
+//▿ 12 : Solution
+//- number : 2
+//- category : AdventOfCode.Category.eqrr
+//▿ 13 : Solution
+//- number : 6
+//- category : AdventOfCode.Category.gtri
+//▿ 14 : Solution
+//- number : 13
+//- category : AdventOfCode.Category.gtrr
+//▿ 15 : Solution
+//- number : 5
+//- category : AdventOfCode.Category.eqir
