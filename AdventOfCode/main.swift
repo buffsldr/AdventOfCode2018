@@ -30,7 +30,7 @@ extension Day {
     }
 }
 
-let focusOnDay: Int? = 16
+let focusOnDay: Int? = 8
 
 let thisYear = Year2018()
 
