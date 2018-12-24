@@ -49,9 +49,9 @@ class Matrix<T: Hashable>: Hashable, CustomStringConvertible {
     }
     
     var description: String {
-        return "[" + data.map({
-            "[" + $0.map { String(describing: $0) }.joined(separator: " ") + "]"
-        }).joined(separator: "\n ") + "]"
+        return "" + data.map({
+            "" + $0.map { String(describing: $0) }.joined(separator: " ") + ""
+        }).joined(separator: "\n ") + ""
     }
     
     init(_ initial: [[T]]) {
@@ -166,4 +166,3 @@ class Matrix<T: Hashable>: Hashable, CustomStringConvertible {
         return Matrix<Matrix<T>>(newData)
     }
 }
-
