@@ -38,7 +38,7 @@ class Matrix<T: Hashable>: Hashable, CustomStringConvertible {
         return rowsEqual.reduce(true) { $0 && $1 }
     }
     
-    private var data: Array<Array<T>>
+    var data: Array<Array<T>>
     
     var rowCount: Int { return data.count }
     var colCount: Int { return data.first?.count ?? 0 }
